@@ -9,6 +9,7 @@ class GymRunner():
     def __init__(self, env_name = "LunarLander-v2", outdir = '/tmp/RF-results'):
         self.ENV_NAME = env_name
         self.env = gym.make(self.ENV_NAME)
+        self.env.seed(228)
         #self.env = wrappers.Monitor(self.env, directory=outdir, force=True)
         #self.env._max_episode_steps = 1200
 

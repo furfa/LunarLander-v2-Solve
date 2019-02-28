@@ -30,4 +30,4 @@ if __name__ == '__main__':
 
     agent = RandomAgent(GR.get_shapes()["action_space"])
 
-    GR.test_agent(agent, 1000000000)
+    GR.test_agent(agent, 100)
