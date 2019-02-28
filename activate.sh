@@ -10,6 +10,7 @@ else
    echo "INSTALLING"
    conda env create -f environment.yml
    source activate $1
+   pip install -r requirements.txt
 fi;
 
 echo Ezz;
