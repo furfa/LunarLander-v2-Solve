@@ -12,6 +12,7 @@ class RandomAgent(object):
     def act(self, observation, reward, done):
         return self.action_space.sample()
 
+# New comment
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('env_id', nargs='?', default='LunarLander-v2', help='Select the environment to run')
