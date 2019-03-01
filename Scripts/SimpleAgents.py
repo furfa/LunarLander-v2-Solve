@@ -3,7 +3,7 @@ import sys
 
 import gym
 from gym import wrappers, logger
-from GymRunner import GymRunner
+from BaseClasses import GymRunner
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Activation, Flatten
