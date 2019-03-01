@@ -7,9 +7,11 @@ import numpy as np
     PS : {'action_space': 4, 'observation_space': (8,)}
 """
 
-class SimpleNetwork(nn.Module):
-    def __init__(self):
-        super(DeepQNetwork, self).__init__()
+class SimpleNet(nn.Module):
+    def __init__(self, ALPHA):
+        super(SimpleNet, self).__init__()
+
+        self.ALPHA = ALPHA
 
         INPUT_SHAPE = 8
         OUTPUT_SHAPE = 4
@@ -26,10 +28,10 @@ class SimpleNetwork(nn.Module):
             nn.Linear(16, OUTPUT_SHAPE)
         )
 
-        self.optimizer = optim.SGD(self.parameters() ) # , lr=self.ALPHA, momentum=0.9) # Tune this
+        self.optimizer = optim.SGD(self.parameters(), lr=self.ALPHA, momentum=0.9) # Tune this
 
         self.loss = nn.MSELoss()
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')     
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')     
         self.to(self.device)
     
     def forward(self, observation):

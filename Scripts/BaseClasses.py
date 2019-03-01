@@ -1,4 +1,5 @@
 import torch
+import torch as T # Чтобы копипаста работала
 from torch import nn, optim
 from torch.nn import functional as F
 import numpy as np
@@ -91,6 +92,46 @@ class GymRunner():
             "observation_space" : self.env.observation_space.shape,
         }
 
+    def random_actions(self, agent):
+
+        env = self.env
+
+        while agent.memCntr < agent.memSize:
+            observation = env.reset()
+            done = False
+            while not done:
+                action = env.action_space.sample()
+                observation_, reward, done, info = env.step(action)
+
+                agent.storeTransition(observation, action, reward, observation_)
+                observation = observation_
+
+    def fit(self, agent, n_iters, batch_size=32):
+
+        env = self.env
+        scores = []
+        # epsHistory = []
+
+        for i in range(n_iters):
+            
+            # epsHistory.append(agent.EPSILON)        
+            done = False
+            observation = env.reset()
+            frames = [observation]
+            score = 0
+            while not done:
+                action = agent.chooseAction( observation=observation)
+
+                observation_, reward, done, info = env.step(action)
+                score += reward
+
+                agent.storeTransition(observation, action, reward, observation_)
+                observation = observation_            
+                agent.learn(batch_size)
+
+            scores.append(score)
+            print('score:',score)
+
     def test_agent(self, agent, n_iters):
         self.env = gym.make(self.ENV_NAME)
         
@@ -104,7 +145,7 @@ class GymRunner():
             while not done:
                 self.env.render()
 
-                action = agent.act(observation, reward, done)
+                action = agent.chooseAction(observation, reward, done)
 
                 observation, reward, done, info = self.env.step(action)
                 print(f"REWARD = {reward}")
