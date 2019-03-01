@@ -7,6 +7,7 @@ from GymRunner import GymRunner
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Activation, Flatten
+import getkey
 class RandomAgent(object):
     """The world's simplest agent!"""
     def __init__(self, action_space):
@@ -15,32 +16,21 @@ class RandomAgent(object):
     def act(self, observation, reward, done):
         return  np.random.randint(self.action_space)
 
-class KerasModel(object):
-    """The world's simplest agent!"""
-    self.input_shape = (0,0)
-    self.output_shape = (0)
-    def __init__(self, action_space, model, input_shape, output_shape):
-        self.input_shape = input_shape
-        self.output_shape = output_shape
-        self.action_space = action_space
-        
-        model = keras.models.Sequential([
-                Dense(32, input_shape= self.input_shape),
-                Flatten(),
-                Activation('relu'),
-                Dense(self.output_shape),
-                Activation('softmax'),
-        ])
-        print(model.summary())
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-        self.model = model
+class KeyboardAgent(object):
+    """Keyboard control"""
 
-    def fit(self, X, y):
-        model.fit(X, y)
-        return model
-
+    def __init__(self):
+        print("Keyb agent created")
+    
     def act(self, observation, reward, done):
-        return np.argmax(self.model.predict([observation])[0])
+        key = getkey.getkey()
+        if key == getkey.keys.DOWN:
+            return 2
+        elif key == getkey.keys.LEFT:
+            return 3
+        elif key == getkey.keys.RIGHT:
+            return 1
+        return 0 # Ps ничего не делать 
 
 
 if __name__ == '__main__':
@@ -57,6 +47,8 @@ if __name__ == '__main__':
  
     GR = GymRunner("LunarLander-v2", '/tmp/random-agent-results') 
 
-    agent = RandomAgent(GR.get_shapes()["action_space"])
+    # agent = RandomAgent(GR.get_shapes()["action_space"])
+    agent = KeyboardAgent()
+
 
     GR.test_agent(agent, 100)
