@@ -31,6 +31,7 @@ for i in range(100):
     frames = [observation]
     score = 0
     while not done:
+        env.render()
         action = agent.chooseAction( observation=observation)
 
         observation_, reward, done, info = env.step(action)
