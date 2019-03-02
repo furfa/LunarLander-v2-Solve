@@ -106,7 +106,7 @@ class GymRunner():
                 agent.storeTransition(observation, action, reward, observation_)
                 observation = observation_
 
-    def fit(self, agent, n_iters, batch_size=32):
+    def fit(self, agent, n_iters, batch_size=32,visualize=True):
 
         env = self.env
         scores = []
@@ -120,6 +120,8 @@ class GymRunner():
             frames = [observation]
             score = 0
             while not done:
+                if visualize:
+                    env.render()
                 action = agent.chooseAction( observation=observation)
 
                 observation_, reward, done, info = env.step(action)
@@ -130,13 +132,13 @@ class GymRunner():
                 agent.learn(batch_size)
 
             scores.append(score)
-            print('score:',score)
+            print('score:',score,'iter:',i)
 
     def test_agent(self, agent, n_iters):
         self.env = gym.make(self.ENV_NAME)
         
-
-        for _ in range(n_iters):
+        mean_reward = []
+        for iter in range(n_iters):
             done = False
             observation = self.env.reset()
             reward = 0
@@ -145,8 +147,10 @@ class GymRunner():
             while not done:
                 self.env.render()
 
-                action = agent.chooseAction(observation, reward, done)
+                action = agent.chooseAction(observation)
 
                 observation, reward, done, info = self.env.step(action)
-                print(f"REWARD = {reward}")
+                #print(f"REWARD = {reward}")
+                mean_reward.append(reward)
+        print('Mean_reward:',np.mean(mean_reward))
         self.env.close()
