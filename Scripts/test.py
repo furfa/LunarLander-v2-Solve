@@ -6,8 +6,8 @@ import numpy as np
     Model init 
 """
 
-agent = Agent(TorchModels.SimpleNet, gamma=0.95, epsilon=1.0,
-                  alpha=0.003, maxMemorySize=5000,
+agent = Agent(TorchModels.SimpleNet, gamma=0.99,     epsilon=1,
+                  alpha=0.01, maxMemorySize=10000,
                   replace=None)
 gR = GymRunner()
 
@@ -25,10 +25,8 @@ batch_size = 5
 
 
 
-gR.fit(agent, 200)
+gR.fit(agent, 100,visualize=False)
 
-gR.test_agent(agent,n_iters=15)
 
-# optim - sgd, mean_score = -145.956
-# optim - Adam, mean_score = -161.79
-# optim - Ada, mean_score =  - 146.63
+gR.test_agent(agent,n_iters=10)
+
