@@ -13,7 +13,7 @@ class RandomAgent(object):
     def __init__(self, action_space):
         self.action_space = action_space
 
-    def chooseAction(self, observation, reward, done):
+    def chooseAction(self, observation):
         return  np.random.randint(self.action_space)
 
 class KeyboardAgent(object):
@@ -22,7 +22,7 @@ class KeyboardAgent(object):
     def __init__(self):
         print("Keyb agent created")
     
-    def chooseAction(self, observation, reward, done):
+    def chooseAction(self, observation):
         key = getkey.getkey()
         if key == getkey.keys.DOWN:
             return 2

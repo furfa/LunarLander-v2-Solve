@@ -150,7 +150,7 @@ class GymRunner():
                 action = agent.chooseAction(observation)
 
                 observation, reward, done, info = self.env.step(action)
-                #print(f"REWARD = {reward}")
+                print(f"REWARD = {reward}")
                 mean_reward.append(reward)
         print('Mean_reward:',np.mean(mean_reward))
         self.env.close()
