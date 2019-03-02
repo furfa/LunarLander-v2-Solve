@@ -1,14 +1,14 @@
 from BaseClasses import *
 import TorchModels
-
+import numpy as np
+#from agent_torch import *
 """
     Model init 
 """
 
-agent = Agent(TorchModels.SimpleNet, gamma=0.95, epsilon=1.0, 
+agent = Agent(TorchModels.SimpleNet, gamma=0.95, epsilon=1.0,
                   alpha=0.003, maxMemorySize=5000,
-                  replace=None) 
-
+                  replace=None)
 gR = GymRunner()
 
 """
@@ -23,29 +23,12 @@ scores = []
 batch_size = 5
 # epsHistory = []
 
-for i in range(100):
-    
-    # epsHistory.append(agent.EPSILON)        
-    done = False
-    observation = env.reset()
-    frames = [observation]
-    score = 0
-    while not done:
-        env.render()
-        action = agent.chooseAction( observation=observation)
-
-        observation_, reward, done, info = env.step(action)
-        score += reward
-
-        agent.storeTransition(observation, action, reward, observation_)
-        observation = observation_            
-        agent.learn(batch_size)
-
-    scores.append(score)
-    print('score:',score)
 
 
+gR.fit(agent, 200)
 
+gR.test_agent(agent,n_iters=15)
 
-
-# gR.fit(Agent, 500)
+# optim - sgd, mean_score = -145.956
+# optim - Adam, mean_score = -161.79
+# optim - Ada, mean_score =  - 146.63

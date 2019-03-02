@@ -9,7 +9,7 @@ import numpy as np
 
 class SimpleNet(nn.Module):
     def __init__(self, ALPHA):
-        super(SimpleNet, self).__init__()
+        super().__init__()
 
         self.ALPHA = ALPHA
 
@@ -17,20 +17,18 @@ class SimpleNet(nn.Module):
         OUTPUT_SHAPE = 4
 
         self.model = nn.Sequential(
-            nn.Linear(INPUT_SHAPE, 16),
-            nn.ReLU(),
-            nn.Linear(16, 200),
-            nn.ReLU(),
-            nn.Linear(200, 200),
-            nn.ReLU(),
-            nn.Linear(200, 200),
-            nn.ReLU(),
-            nn.Linear(200, 16),
-            nn.ReLU(),
-            nn.Linear(16, OUTPUT_SHAPE)
+            nn.Linear(INPUT_SHAPE, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, OUTPUT_SHAPE)
         )
 
-        self.optimizer = optim.SGD(self.parameters(), lr=self.ALPHA, momentum=0.9) # Tune this
+        self.optimizer = optim.Adam(self.parameters(), lr=self.ALPHA) # Tune this
 
         self.loss = nn.MSELoss()
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')     
@@ -39,5 +37,4 @@ class SimpleNet(nn.Module):
     def forward(self, observation):
         observation = torch.Tensor(observation).to(self.device)
         actions = self.model(observation)
-
         return actions
