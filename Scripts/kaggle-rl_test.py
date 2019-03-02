@@ -31,7 +31,7 @@ model.add(Activation('relu'))
 model.add(Dense(16))
 model.add(Activation('relu'))
 model.add(Dense(nb_actions))
-model.add(Activation('linear'))
+model.add(Activation('softmax'))
 print(model.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and

@@ -51,5 +51,3 @@ for t in range(500):
     with torch.no_grad():
         for param in model.parameters():
             param -= learning_rate * param.grad
-
-

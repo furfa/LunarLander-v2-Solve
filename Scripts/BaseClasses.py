@@ -33,9 +33,12 @@ class Agent(object):
     def chooseAction(self, observation):
         rand = np.random.random()
         actions = self.Q_eval.forward(observation)
+        print(self.EPSILON)
         if rand < 1 - self.EPSILON:
-            action = T.argmax(actions[1]).item()
+            print(f"ACTIONS = {torch.argmax(actions).item()}")
+            action = T.argmax(actions).item()
         else:
+            print("Random!!")
             action = np.random.choice(self.actionSpace)            
         self.steps += 1
         return action
@@ -57,10 +60,12 @@ class Agent(object):
         Qpred = self.Q_eval.forward(list(memory[:,0][:])).to(self.Q_eval.device)
         Qnext = self.Q_next.forward(list(memory[:,3][:])).to(self.Q_eval.device)       
         
+        print(f" Q next = {Qnext}, Q prev = {Qpred}")
+
         maxA = T.argmax(Qnext, dim=1).to(self.Q_eval.device) 
         rewards = T.Tensor(list(memory[:,2])).to(self.Q_eval.device)        
         Qtarget = Qpred        
-        Qtarget[:,maxA] = rewards + self.GAMMA*T.max(Qnext[1])
+        Qtarget[:,maxA] = rewards + self.GAMMA*T.max(Qnext)
         
         if self.steps > 500:
             if self.EPSILON - 1e-4 > self.EPS_END:
@@ -144,13 +149,16 @@ class GymRunner():
             reward = 0
             info = {}
 
+            sum_reward = 0
             while not done:
                 self.env.render()
 
                 action = agent.chooseAction(observation)
 
                 observation, reward, done, info = self.env.step(action)
-                #print(f"REWARD = {reward}")
+
+                sum_reward += reward
+                print(f"REWARD = {reward}, SUM= {sum_reward}")
                 mean_reward.append(reward)
         print('Mean_reward:',np.mean(mean_reward))
         self.env.close()
