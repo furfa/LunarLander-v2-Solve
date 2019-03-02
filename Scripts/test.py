@@ -6,8 +6,8 @@ import numpy as np
     Model init 
 """
 
-agent = Agent(TorchModels.SimpleNet, gamma=0.95, epsilon=1.0,
-                  alpha=0.03, maxMemorySize=5000,
+agent = Agent(TorchModels.SimpleNet, gamma=0.95, epsilon=0.5,
+                  alpha=0.1, maxMemorySize=1000,
                   replace=None)
 gR = GymRunner()
 
