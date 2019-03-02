@@ -11,10 +11,7 @@ agent = Agent(TorchModels.SimpleNet, gamma=0.99,     epsilon=1,
                   replace=None)
 gR = GymRunner()
 
-"""
-    Случайные действия для начала
-    Внутри они выполняются пока не закончится память, выделенная под агента
-"""
+
 
 gR.random_actions(agent)
 
