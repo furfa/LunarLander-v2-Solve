@@ -43,12 +43,12 @@ class Memory():
 class Agent(object):
     def __init__(self, MODEL, gamma, epsilon, alpha, 
                  maxMemorySize, epsEnd=0.05, 
-                 replace=10000, actionSpace=[0,1,2,3]):
+                 replace=10000, n_actions=4):
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd
         self.ALPHA = alpha
-        self.actionSpace = actionSpace
+        self.n_actions = n_actions
         self.memSize = maxMemorySize
         self.steps = 0
         self.learn_step_counter = 0
@@ -56,38 +56,33 @@ class Agent(object):
         self.replace_weight_freq = replace
         self.Q_nn_base = MODEL(alpha)
         self.Q_nn_copy = MODEL(alpha)
-
-    def storeTransition(self, obs, action, reward, next_obs):
-        self.memory.append(
-            obs, action, reward, next_obs
-        )
         
     def chooseAction(self, observation):
         rand = np.random.random()
         actions = self.Q_nn_base(observation)
-        #print(self.EPSILON)
+        # print(self.EPSILON)
         if rand < 1 - self.EPSILON:
-            action = torch.argmax(actions).item()
-           # print(f"ACTIONS = {action}")
+           action = torch.argmax(actions).item()
+           print(f"ACTIONS = {action}")
         else:
-            action = np.random.choice(self.actionSpace)            
-            #print("Random!!")
+            action = np.random.choice(range(self.n_actions))            
+            print("Random!!")
         self.steps += 1
         return action
     
     def learn(self, batch_size):
         self.Q_nn_copy.optimizer.zero_grad()
-        if self.replace_weight_freq is not None and \
-           self.learn_step_counter % self.replace_weight_freq == 0:
+
+        # print(self.learn_step_counter, self.replace_weight_freq)
+
+        if self.learn_step_counter % self.replace_weight_freq == 0:
             # Replace every replace_weight_freq iter
             self.Q_nn_base.load_state_dict(self.Q_nn_copy.state_dict())
 
-        if self.memory.index+batch_size < self.memory.size:            
-            memStart = int(np.random.choice(range(self.memory.index)))
-        else:
-            memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
+        memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
 
         miniBatch = copy.deepcopy( self.memory )
+
         miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
 
         # convert to list because memory is an array of numpy objects
@@ -102,17 +97,17 @@ class Agent(object):
         
 
         rewards = torch.Tensor( miniBatch.get_reward() )
-        y = rewards + self.GAMMA*torch.max( Q_base_predict )
+        y = rewards + self.GAMMA*torch.max( Q_base_predict, dim=1 )[0]
         
         if self.steps > 500:
-            if self.EPSILON - 1e-4 > self.EPS_END:
-                self.EPSILON -= 1e-4
+            if self.EPSILON - 1e-5 > self.EPS_END:
+                self.EPSILON -= 1e-5
             else:
                 self.EPSILON = self.EPS_END
 
         loss = self.Q_nn_base.loss(y, torch.max(Q_copy_predict, dim=1)[0] ) 
         loss.backward()
-        self.Q_nn_copy.optimizer.step()
+        self.Q_nn_base.optimizer.step()
         self.learn_step_counter += 1
 
 class GymRunner():
@@ -154,11 +149,9 @@ class GymRunner():
         # epsHistory = []
 
         for i in range(n_iters):
-            
             # epsHistory.append(agent.EPSILON)        
             done = False
             observation = env.reset()
-            frames = [observation]
             score = 0
             while not done:
                 if visualize:
@@ -168,7 +161,8 @@ class GymRunner():
                 observation_, reward, done, info = env.step(action)
                 score += reward
 
-                agent.storeTransition(observation, action, reward, observation_)
+                agent.memory.append(observation, action, reward, observation_)
+
                 observation = observation_            
                 agent.learn(batch_size)
 
