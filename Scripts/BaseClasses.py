@@ -37,7 +37,7 @@ class Memory():
         return self.data[:, self.observation_size+1 : self.observation_size+1+self.reward_size]
     def get_next_observation(self):
         return self.data[:, self.observation_size+1+self.reward_size :] 
-    def get_data():
+    def get_data(self):
         return self.data
     
 class Agent(object):
