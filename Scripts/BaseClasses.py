@@ -1,5 +1,5 @@
+import copy
 import torch
-import torch as T # Чтобы копипаста работала
 from torch import nn, optim
 from torch.nn import functional as F
 import numpy as np
@@ -21,9 +21,9 @@ class Memory():
             (size, observation_size+reward_size+observation_size+1)
         )
         
-    def append(self, obs, action, reward, prev_obs):
+    def append(self, obs, action, reward, next_obs):
         self.data[self.index % self.size] = np.hstack(
-            (obs, action, reward, prev_obs)
+            (obs, action, reward, next_obs)
         )
 
         self.index += 1
@@ -32,14 +32,13 @@ class Memory():
         return self.data[:, 0:self.observation_size]
 
     def get_action(self):
-        """
-        Возвращает одномерный массив
-        """
         return self.data[:, self.observation_size : self.observation_size+1]
     def get_reward(self):
         return self.data[:, self.observation_size+1 : self.observation_size+1+self.reward_size]
-    def get_prev_observation(self):
+    def get_next_observation(self):
         return self.data[:, self.observation_size+1+self.reward_size :] 
+    def get_data():
+        return self.data
     
 class Agent(object):
     def __init__(self, MODEL, gamma, epsilon, alpha, 
@@ -53,58 +52,57 @@ class Agent(object):
         self.memSize = maxMemorySize
         self.steps = 0
         self.learn_step_counter = 0
-        self.memory = []
-        self.memCntr = 0
-        self.replace_target_cnt = replace
-        self.Q_eval = MODEL(alpha)
-        self.Q_next = MODEL(alpha)
+        self.memory = Memory(self.memSize, observation_size = 8, reward_size = 1)
+        self.replace_weight_freq = replace
+        self.Q_nn_base = MODEL(alpha)
+        self.Q_nn_copy = MODEL(alpha)
 
-    def storeTransition(self, state, action, reward, state_):
-        if self.memCntr < self.memSize:
-            self.memory.append([state, action, reward, state_])
-        else:            
-            self.memory[self.memCntr%self.memSize] = [state, action, reward, state_]
-        self.memCntr += 1
+    def storeTransition(self, obs, action, reward, next_obs):
+        self.memory.append(
+            obs, action, reward, next_obs
+        )
         
     def chooseAction(self, observation):
         rand = np.random.random()
-        actions = self.Q_eval.forward(observation)
+        actions = self.Q_nn_base(observation)
         print(self.EPSILON)
         if rand < 1 - self.EPSILON:
-            print(f"ACTIONS = {torch.argmax(actions).item()}")
-            action = T.argmax(actions).item()
+            action = torch.argmax(actions).item()
+            print(f"ACTIONS = {action}")
         else:
-            print("Random!!")
             action = np.random.choice(self.actionSpace)            
+            print("Random!!")
         self.steps += 1
         return action
     
     def learn(self, batch_size):
-        self.Q_eval.optimizer.zero_grad()
-        if self.replace_target_cnt is not None and \
-           self.learn_step_counter % self.replace_target_cnt == 0:
-            self.Q_next.load_state_dict(self.Q_eval.state_dict())
+        self.Q_nn_copy.optimizer.zero_grad()
+        if self.replace_weight_freq is not None and \
+           self.learn_step_counter % self.replace_weight_freq == 0:
+            # Replace every replace_weight_freq iter
+            self.Q_nn_base.load_state_dict(self.Q_nn_copy.state_dict())
 
-        if self.memCntr+batch_size < self.memSize:            
-            memStart = int(np.random.choice(range(self.memCntr)))
+        if self.memory.index+batch_size < self.memory.size:            
+            memStart = int(np.random.choice(range(self.memory.index)))
         else:
-            memStart = int(np.random.choice(range(self.memSize-batch_size-1)))
-        miniBatch=self.memory[memStart:memStart+batch_size]
-        memory = np.array(miniBatch)
+            memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
+
+        miniBatch = copy.deepcopy( self.memory )
+        miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
 
         # convert to list because memory is an array of numpy objects
-        # print(memory)
-        # input()
 
-        Qpred = self.Q_eval(list(memory[:,0][:]))
-        Qnext = self.Q_next(list(memory[:,3][:]))
+        Q_copy_predict = self.Q_nn_copy(
+            miniBatch.get_observation()
+            )
+
+        Q_base_predict = self.Q_nn_base(
+            miniBatch.get_next_observation()
+            )
         
-        print(f" Q next = {Qnext}, Q prev = {Qpred}")
 
-        maxA = T.argmax(Qnext, dim=1).to(self.Q_eval.device) 
-        rewards = T.Tensor(list(memory[:,2])).to(self.Q_eval.device)        
-        Qtarget = Qpred        
-        Qtarget[:,maxA] = rewards + self.GAMMA*T.max(Qnext)
+        rewards = torch.Tensor( miniBatch.get_reward() )
+        y = rewards + self.GAMMA*torch.max( Q_base_predict )
         
         if self.steps > 500:
             if self.EPSILON - 1e-4 > self.EPS_END:
@@ -112,10 +110,9 @@ class Agent(object):
             else:
                 self.EPSILON = self.EPS_END
 
-        #Qpred.requires_grad_()        
-        loss = self.Q_eval.loss(Qtarget, Qpred).to(self.Q_eval.device)
+        loss = self.Q_nn_base.loss(y, torch.max(Q_copy_predict, dim=1)[0] ) 
         loss.backward()
-        self.Q_eval.optimizer.step()
+        self.Q_nn_copy.optimizer.step()
         self.learn_step_counter += 1
 
 class GymRunner():
@@ -140,14 +137,14 @@ class GymRunner():
 
         env = self.env
 
-        while agent.memCntr < agent.memSize:
+        while agent.memory.index < agent.memory.size:
             observation = env.reset()
             done = False
             while not done:
                 action = env.action_space.sample()
                 observation_, reward, done, info = env.step(action)
 
-                agent.storeTransition(observation, action, reward, observation_)
+                agent.memory.append(observation, action, reward, observation_)
                 observation = observation_
 
     def fit(self, agent, n_iters, batch_size=32,visualize=True):
