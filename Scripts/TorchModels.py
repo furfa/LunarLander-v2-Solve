@@ -18,15 +18,15 @@ class SimpleNet(nn.Module):
         OUTPUT_SHAPE = 4
 
         self.model = nn.Sequential(
-            nn.Linear(INPUT_SHAPE, 64),
+            nn.Linear(INPUT_SHAPE, 16),
             nn.ReLU(),
-            nn.Linear(64, 128),
+            nn.Linear(16, 16),
             nn.ReLU(),
-            nn.Linear(128, 256),
+            nn.Linear(16, 16),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(16, 16),
             nn.ReLU(),
-            nn.Linear(256, OUTPUT_SHAPE),
+            nn.Linear(16, OUTPUT_SHAPE),
 
         )
 

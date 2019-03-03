@@ -39,14 +39,17 @@ class Memory():
         return self.data[:, self.observation_size+1+self.reward_size :] 
     def get_data(self):
         return self.data
-    
+    def get_size(self):
+        return self.data.shape[0] 
+
 class Agent(object):
     def __init__(self, MODEL, gamma, epsilon, alpha, 
-                 maxMemorySize, epsEnd=0.05, 
+                 maxMemorySize, epsEnd=0.05, eps_minimize_per_iter = 1e-5,
                  replace=10000, n_actions=4):
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd
+        self.EPS_MINIMIZE = eps_minimize_per_iter
         self.ALPHA = alpha
         self.n_actions = n_actions
         self.memSize = maxMemorySize
@@ -62,11 +65,11 @@ class Agent(object):
         actions = self.Q_nn_base(observation)
         # print(self.EPSILON)
         if rand < 1 - self.EPSILON:
-           action = torch.argmax(actions).item()
-           print(f"ACTIONS = {action}")
+            action = torch.argmax(actions).item()
+            # print(f"ACTIONS = {action}")
         else:
             action = np.random.choice(range(self.n_actions))            
-            print("Random!!")
+            # print("Random!!")
         self.steps += 1
         return action
     
@@ -79,13 +82,17 @@ class Agent(object):
             # Replace every replace_weight_freq iter
             self.Q_nn_base.load_state_dict(self.Q_nn_copy.state_dict())
 
-        memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
-
         miniBatch = copy.deepcopy( self.memory )
 
-        miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
+        if True: # Как выделять бач
 
-        # convert to list because memory is an array of numpy objects
+            selected_rows = np.random.choice( 
+                np.arange( self.memory.get_size() ), batch_size, replace=False
+            ) # Рандомные строки в количесве batch size
+            miniBatch.data = miniBatch.data[selected_rows] # Slice
+        else:
+            memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
+            miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
 
         Q_copy_predict = self.Q_nn_copy(
             miniBatch.get_observation()
@@ -100,8 +107,8 @@ class Agent(object):
         y = rewards + self.GAMMA*torch.max( Q_base_predict, dim=1 )[0]
         
         if self.steps > 500:
-            if self.EPSILON - 1e-5 > self.EPS_END:
-                self.EPSILON -= 1e-5
+            if self.EPSILON - self.EPS_MINIMIZE > self.EPS_END:
+                self.EPSILON -= self.EPS_MINIMIZE
             else:
                 self.EPSILON = self.EPS_END
 
