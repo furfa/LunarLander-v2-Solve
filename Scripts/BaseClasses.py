@@ -100,7 +100,7 @@ class Agent(object):
         Qpred = self.Q_eval(list(memory[:,0][:]))
         Qnext = self.Q_next(list(memory[:,3][:]))
         
-        # print(f" Q next = {Qnext}, Q prev = {Qpred}")
+        print(f" Q next = {Qnext}, Q prev = {Qpred}")
 
         maxA = T.argmax(Qnext, dim=1).to(self.Q_eval.device) 
         rewards = T.Tensor(list(memory[:,2])).to(self.Q_eval.device)        
