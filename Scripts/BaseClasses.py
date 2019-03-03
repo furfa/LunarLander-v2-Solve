@@ -5,6 +5,43 @@ from torch.nn import functional as F
 import numpy as np
 import gym
 from gym import wrappers, logger
+
+class Memory():
+    def __init__(self, size, observation_size, reward_size):
+        """
+        size - int
+        observation_size - int
+        reward_size - int
+        """
+        self.observation_size = observation_size
+        self.reward_size = reward_size
+        self.index = 0
+        self.size = size
+        self.data = np.zeros( 
+            (size, observation_size+reward_size+observation_size+1)
+        )
+        
+    def append(self, obs, action, reward, prev_obs):
+        self.data[self.index % self.size] = np.hstack(
+            (obs, action, reward, prev_obs)
+        )
+
+
+        self.index += 1
+
+    def get_observation(self):
+        return self.data[:, 0:self.observation_size]
+
+    def get_action(self):
+        """
+        Возвращает одномерный массив
+        """
+        return self.data[:, self.observation_size]
+    def get_reward(self):
+        return self.data[:, self.observation_size+1 : self.observation_size+1+self.reward_size]
+    def get_prev_observation(self):
+        return self.data[:, self.observation_size+1+self.reward_size :] 
+    
 class Agent(object):
     def __init__(self, MODEL, gamma, epsilon, alpha, 
                  maxMemorySize, epsEnd=0.05, 
@@ -57,10 +94,13 @@ class Agent(object):
         memory = np.array(miniBatch)
 
         # convert to list because memory is an array of numpy objects
-        Qpred = self.Q_eval.forward(list(memory[:,0][:])).to(self.Q_eval.device)
-        Qnext = self.Q_next.forward(list(memory[:,3][:])).to(self.Q_eval.device)       
+        # print(memory)
+        # input()
+
+        Qpred = self.Q_eval(list(memory[:,0][:]))
+        Qnext = self.Q_next(list(memory[:,3][:]))
         
-        print(f" Q next = {Qnext}, Q prev = {Qpred}")
+        # print(f" Q next = {Qnext}, Q prev = {Qpred}")
 
         maxA = T.argmax(Qnext, dim=1).to(self.Q_eval.device) 
         rewards = T.Tensor(list(memory[:,2])).to(self.Q_eval.device)        
