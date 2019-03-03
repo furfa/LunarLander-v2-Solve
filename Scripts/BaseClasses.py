@@ -26,7 +26,6 @@ class Memory():
             (obs, action, reward, prev_obs)
         )
 
-
         self.index += 1
 
     def get_observation(self):
@@ -36,7 +35,7 @@ class Memory():
         """
         Возвращает одномерный массив
         """
-        return self.data[:, self.observation_size]
+        return self.data[:, self.observation_size : self.observation_size+1]
     def get_reward(self):
         return self.data[:, self.observation_size+1 : self.observation_size+1+self.reward_size]
     def get_prev_observation(self):
