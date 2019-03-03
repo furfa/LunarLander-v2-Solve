@@ -154,7 +154,7 @@ class GymRunner():
         # epsHistory = []
 
         for i in range(n_iters):
-            
+            env.render()
             # epsHistory.append(agent.EPSILON)        
             done = False
             observation = env.reset()

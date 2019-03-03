@@ -15,12 +15,6 @@ gR = GymRunner()
 
 gR.random_actions(agent)
 
-env = gR.env
-scores = []
-batch_size = 5
-# epsHistory = []
-
-
 
 gR.fit(agent, 100,visualize=False)
 
