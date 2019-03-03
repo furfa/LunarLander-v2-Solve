@@ -65,13 +65,13 @@ class Agent(object):
     def chooseAction(self, observation):
         rand = np.random.random()
         actions = self.Q_nn_base(observation)
-        print(self.EPSILON)
+        #print(self.EPSILON)
         if rand < 1 - self.EPSILON:
             action = torch.argmax(actions).item()
-            print(f"ACTIONS = {action}")
+           # print(f"ACTIONS = {action}")
         else:
             action = np.random.choice(self.actionSpace)            
-            print("Random!!")
+            #print("Random!!")
         self.steps += 1
         return action
     
@@ -194,7 +194,7 @@ class GymRunner():
                 observation, reward, done, info = self.env.step(action)
 
                 sum_reward += reward
-                print(f"REWARD = {reward}, SUM= {sum_reward}")
-                mean_reward.append(reward)
+            print(f"Game_reward= {sum_reward}")
+            mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
         self.env.close()
