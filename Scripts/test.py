@@ -6,10 +6,11 @@ import numpy as np
     Model init 
 """
 
-agent = Agent(TorchModels.SimpleNet, gamma=0.99, epsilon=0.8,
-                epsEnd=0.09, eps_minimize_per_iter = 1e-4,
+agent = Agent(TorchModels.SimpleNet, gamma=0.99, epsilon=0.99,
+                epsEnd=0.05, eps_minimize_per_iter = 1e-4,
                 alpha=1e-3, maxMemorySize=1500,
-                replace=1)
+                tau=5e-4
+                )
 gR = GymRunner()
 
 print(11)
@@ -19,8 +20,9 @@ print("Заполнение памяти случайными действиям
 
 gR.fit(
     agent, 
-    n_iters = 100,
-    batch_size=20,
+    n_iters = 10000,
+    batch_size=32,
+    LEARN_FREQ=20,
     visualize=True
 )
 
