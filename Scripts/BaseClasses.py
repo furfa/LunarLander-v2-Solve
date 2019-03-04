@@ -5,7 +5,7 @@ from torch.nn import functional as F
 import numpy as np
 import gym
 from gym import wrappers, logger
-
+import tqdm
 class Memory():
     def __init__(self, size, observation_size, reward_size):
         """
@@ -18,15 +18,16 @@ class Memory():
         self.index = 0
         self.size = size
         self.data = np.zeros( 
-            (size, observation_size+reward_size+observation_size+1)
+            (size, observation_size+reward_size+observation_size+1+1)
         )
         
-    def append(self, obs, action, reward, next_obs):
+    def append(self, obs, action, reward, next_obs, done):
         self.data[self.index % self.size] = np.hstack(
-            (obs, action, reward, next_obs)
+            (obs, action, reward, next_obs, done)
         )
 
         self.index += 1
+        self.index %= self.size
 
     def get_observation(self):
         return self.data[:, 0:self.observation_size]
@@ -36,7 +37,9 @@ class Memory():
     def get_reward(self):
         return self.data[:, self.observation_size+1 : self.observation_size+1+self.reward_size]
     def get_next_observation(self):
-        return self.data[:, self.observation_size+1+self.reward_size :] 
+        return self.data[:, self.observation_size+1+self.reward_size :self.observation_size+1+self.reward_size+self.observation_size] 
+    def get_dones(self):
+        return self.data[:, -1]
     def get_data(self):
         return self.data
     def get_size(self):
@@ -62,8 +65,10 @@ class Agent(object):
         
     def chooseAction(self, observation):
         rand = np.random.random()
+
         actions = self.Q_nn_base(observation)
-        # print(self.EPSILON)
+            
+            # print(self.EPSILON)
         if rand < 1 - self.EPSILON:
             action = torch.argmax(actions).item()
             # print(f"ACTIONS = {action}")
@@ -85,14 +90,15 @@ class Agent(object):
         miniBatch = copy.deepcopy( self.memory )
 
         if True: # Как выделять бач
-
             selected_rows = np.random.choice( 
                 np.arange( self.memory.get_size() ), batch_size, replace=False
             ) # Рандомные строки в количесве batch size
-            miniBatch.data = miniBatch.data[selected_rows] # Slice
+            miniBatch.data = miniBatch.data[selected_rows]
         else:
             memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
             miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
+        
+        dones = miniBatch.get_dones()
 
         Q_copy_predict = self.Q_nn_copy(
             miniBatch.get_observation()
@@ -104,7 +110,12 @@ class Agent(object):
         
 
         rewards = torch.Tensor( miniBatch.get_reward() )
-        y = rewards + self.GAMMA*torch.max( Q_base_predict, dim=1 )[0]
+
+        # print(rewards.shape)
+        # print(torch.max( Q_base_predict, dim=1 )[0].unsqueeze(1).shape)
+        # input()
+
+        y = rewards + self.GAMMA*torch.max( Q_base_predict, dim=1 )[0].unsqueeze(1)
         
         if self.steps > 500:
             if self.EPSILON - self.EPS_MINIMIZE > self.EPS_END:
@@ -112,7 +123,7 @@ class Agent(object):
             else:
                 self.EPSILON = self.EPS_END
 
-        loss = self.Q_nn_base.loss(y, torch.max(Q_copy_predict, dim=1)[0] ) 
+        loss = self.Q_nn_base.loss(y, torch.max(Q_copy_predict, dim=1)[0].unsqueeze(1) ) 
         loss.backward()
         self.Q_nn_base.optimizer.step()
         self.learn_step_counter += 1
@@ -139,16 +150,15 @@ class GymRunner():
 
         env = self.env
 
-        while agent.memory.index < agent.memory.size:
+        for i in tqdm.tqdm( range( agent.memory.get_size() ) ):
             observation = env.reset()
             done = False
             while not done:
                 action = env.action_space.sample()
                 observation_, reward, done, info = env.step(action)
 
-                agent.memory.append(observation, action, reward, observation_)
+                agent.memory.append(observation, action, reward, observation_, done)
                 observation = observation_
-
     def fit(self, agent, n_iters, batch_size=32,visualize=True):
 
         env = self.env
@@ -168,7 +178,7 @@ class GymRunner():
                 observation_, reward, done, info = env.step(action)
                 score += reward
 
-                agent.memory.append(observation, action, reward, observation_)
+                agent.memory.append(observation, action, reward, observation_, done)
 
                 observation = observation_            
                 agent.learn(batch_size)
@@ -199,3 +209,4 @@ class GymRunner():
             mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
         self.env.close()
+

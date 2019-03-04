@@ -10,7 +10,7 @@ print("-" * 10)
 
 for i in range(5):
     mem.append(
-        [3,3], 77,228,[7,3]
+        [3,3], 77,228,[7,3], 0
     )
 
 
@@ -18,7 +18,7 @@ print(mem.data)
 
 print("-" * 10)
 mem.append(
-    [4, 4], 69,228,[4, 4]
+    [4, 4], 69,228,[4, 4], 0
 )
 
 print(mem.data)
@@ -50,4 +50,5 @@ miniBatch = copy.deepcopy( mem )
 miniBatch.data = miniBatch.data[selected_rows] # Slice
 
 print( miniBatch.get_next_observation() )
+print( miniBatch.get_dones() )
 

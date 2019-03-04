@@ -18,16 +18,11 @@ class SimpleNet(nn.Module):
         OUTPUT_SHAPE = 4
 
         self.model = nn.Sequential(
-            nn.Linear(INPUT_SHAPE, 16),
+            nn.Linear(INPUT_SHAPE, 64),
             nn.ReLU(),
-            nn.Linear(16, 16),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(16, 16),
-            nn.ReLU(),
-            nn.Linear(16, 16),
-            nn.ReLU(),
-            nn.Linear(16, OUTPUT_SHAPE),
-
+            nn.Linear(64, OUTPUT_SHAPE),
         )
 
         self.optimizer = optim.Adam(self.parameters(), lr=self.ALPHA) # Tune this
@@ -35,7 +30,7 @@ class SimpleNet(nn.Module):
         self.loss = nn.MSELoss()
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')     
         self.to(self.device)
-    
+
     def forward(self, observation):
         observation = torch.Tensor(observation).to(self.device)
         actions = self.model(observation)
