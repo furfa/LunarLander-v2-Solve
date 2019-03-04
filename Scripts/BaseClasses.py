@@ -47,16 +47,33 @@ class Memory():
 
 class Agent(object):
     """
-    Q_nn_base - закрепленная нейронка
-
-    """
-    def __init__(self, MODEL, gamma, epsilon, alpha, 
-                 maxMemorySize, epsEnd=0.05, eps_minimize_per_iter = 1e-5,
-                 n_actions=4, tau=1e-3):
+    Класс реализующий DQN агента
+    """ 
+    def __init__(self, MODEL, 
+                 gamma=0.99, 
+                 epsilon=1, 
+                 alpha=1e-3, 
+                 maxMemorySize=1500, 
+                 epsEnd=0.05, 
+                 eps_delta=1e-5,
+                 n_actions=4, 
+                 tau=1e-3):
+        """
+        epsilon - коеф рандома
+        epsEnd - минимальный epsilon
+        eps_delta - коеф уменьшения epsilonа
+        n_actions - количество доступных действий в среде
+        tau - коеф обновления весов закрепленной нейронки
+        alpha - learning-rate
+        ----------------------------------
+        Q_nn_base - закрепленная нейронка
+        Q_nn_copy - основная
+        
+        """
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd
-        self.EPS_MINIMIZE = eps_minimize_per_iter
+        self.EPS_MINIMIZE = eps_delta
         self.ALPHA = alpha
         self.n_actions = n_actions
         self.memSize = maxMemorySize
@@ -96,7 +113,7 @@ class Agent(object):
             memStart = int(np.random.choice(range(self.memory.size-batch_size-1)))
             miniBatch.data = miniBatch.data[memStart:memStart+batch_size] # Slice
         
-        dones = torch.Tensor( miniBatch.get_dones() ).unsqueeze(1)
+        dones = torch.Tensor( miniBatch.get_dones() ).unsqueeze(1) # Fix shape
         rewards = torch.Tensor( miniBatch.get_reward() )
         actions = torch.Tensor( miniBatch.get_action() ).long()
         
@@ -116,13 +133,14 @@ class Agent(object):
 
         self.Q_nn_copy.optimizer.zero_grad()
         loss = self.Q_nn_copy.loss(
-            Q_copy_predict.gather(1, actions), 
+            Q_copy_predict.gather(1, actions), #Выбирает ревард того действия, которое было сделано в истории
             y
-            ) #Выбирает ревард того действия, которое было сделано в истории
+            ) 
 
         loss.backward()
         self.Q_nn_copy.optimizer.step()
 
+        # Реализовать обновление весов с tau
         
         # if self.learn_step_counter % self.replace_weight_freq == 0:
         #     # Replace every replace_weight_freq iter
@@ -133,9 +151,7 @@ class Agent(object):
         for to_p, from_p in zip(model_from.parameters(), model_to.parameters()):
             to_p.data.copy_(tau*from_p.data + (1.0-tau)*to_p.data)
 
-
 class GymRunner():
-
     ENV_NAME = ""
     env = None
 
@@ -168,10 +184,11 @@ class GymRunner():
     def fit(self, agent, n_iters, batch_size=32, LEARN_FREQ=1, visualize=True):
 
         env = self.env
-        scores = []
+        scores = list()
         # epsHistory = []
 
-        for iteration in tqdm( range(n_iters) ):
+        pbar = tqdm( range(n_iters) )
+        for iteration_num in pbar:
             # epsHistory.append(agent.EPSILON)        
             done = False
             observation = env.reset()
@@ -194,7 +211,13 @@ class GymRunner():
                 i += 1
 
             scores.append(score)
-            print('score:',score,'iter:',iteration)
+            pbar.set_description(f"[SCORE] {score:.2f}")
+            if iteration_num % 100 == 0 and iteration_num!=0:
+                print(
+                    f"\n[MEAN_SCORE] {np.mean(scores):.2f} [STD_SCORE] {np.std(scores):.2f} \n", 
+                    end=""
+                )
+                scores = list()
 
     def test_agent(self, agent, n_iters):
         self.env = gym.make(self.ENV_NAME)

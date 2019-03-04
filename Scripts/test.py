@@ -3,17 +3,17 @@ import TorchModels
 import numpy as np
 #from agent_torch import *
 """
-    Model init 
+TODO:
+    - Сделать инициализацию памяти на лету (без random actions), т.к заполнение памяти идет в зачет итераций
+      при этом модель не обучается
 """
 
 agent = Agent(TorchModels.SimpleNet, gamma=0.99, epsilon=0.99,
-                epsEnd=0.05, eps_minimize_per_iter = 1e-4,
+                epsEnd=0.05, eps_delta=1e-4,
                 alpha=1e-3, maxMemorySize=1500,
                 tau=5e-4
                 )
 gR = GymRunner()
-
-print(11)
 
 gR.random_actions(agent)
 print("Заполнение памяти случайными действиями завершено")
