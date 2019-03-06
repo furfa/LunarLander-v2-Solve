@@ -15,10 +15,12 @@ class GymRunner():
     ENV_NAME = ""
     env = None
 
-    def __init__(self, env_name = "LunarLander-v2"):
+    def __init__(self, env_name = "LunarLander-v2", behavior_func = lambda reward : False):
         self.ENV_NAME = env_name
         self.env = gym.make(self.ENV_NAME)
         self.env.seed(228)
+        self.additional_behavior = behavior_func
+
 
         self.LEARNING_EPISODE_COUNTER = 0
 
@@ -65,10 +67,18 @@ class GymRunner():
                 done = False
                 observation = env.reset()
                 score = 0
+                reward = None
+
                 for i in range(max_iters):
                     if visualize:
                         env.render()
-                    action = agent.chooseAction( observation=observation)
+                    
+                    if self.additional_behavior(reward): # Поведение при касании
+                        while not done:
+                            next_observation, reward, done, info = env.step(0)
+                        continue
+                    else:
+                        action = agent.chooseAction( observation=observation)
 
                     next_observation, reward, done, info = env.step(action)
                     score += reward
@@ -87,6 +97,7 @@ class GymRunner():
 
                 if mean_score >= 200:
                     print("Early stopping")
+                    return
 
                 if iteration_num % 100 == 0 and iteration_num!=0:
                     scores = scores[-100:]
@@ -136,22 +147,35 @@ class GymRunner():
             info = {}
 
             sum_reward = 0
+
+            only_passive_action = False
+
             while not done:
                 if render:
                     env.render()
 
                 action = agent.chooseAction(observation)
 
+                if self.additional_behavior(reward): # Поведение при касании
+                    only_passive_action = True    
+                
+                if only_passive_action:
+                    action = 0
+                else:
+                    action = agent.chooseAction( observation=observation)
+
                 observation, reward, done, info = env.step(action)
 
                 sum_reward += reward
+
             print(f"Game_reward= {sum_reward}")
+
             mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
 
         if save_video:
             date = datetime.now()
-            new_dir_name = f"{np.mean(mean_reward)} | {self.LEARNING_EPISODE_COUNTER} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
+            new_dir_name = f"{np.mean(mean_reward):.2f} | {self.LEARNING_EPISODE_COUNTER} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
             new_dir_path = os.path.join(base_path, new_dir_name)
 
             os.replace(tmp_path, new_dir_path)

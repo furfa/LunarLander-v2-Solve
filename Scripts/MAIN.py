@@ -25,11 +25,11 @@ if __name__ == "__main__":
 
         epsilon=0.99, 
         eps_end=0.01, 
-        eps_delta=0.995,
+        eps_delta=0.95,
 
         alpha=1e-3, 
         maxMemorySize=15000,
-        tau=5e-4,
+        tau=1e-3,
         action_space=ACTION_SPACE,
         observation_space=OBS_SPACE,
     )
@@ -37,13 +37,13 @@ if __name__ == "__main__":
             env_name=ENV_NAME
     )
 
-    gR.random_actions(agent, 128)
+    gR.random_actions(agent, 64)
     print("Заполнение памяти случайными действиями завершено")
 
     gR.fit(
         agent, 
         n_iters = 5000,
-        batch_size=128,
+        batch_size=64,
         LEARN_FREQ=4,
         visualize=False
     )
