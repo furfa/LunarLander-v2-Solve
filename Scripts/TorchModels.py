@@ -9,13 +9,10 @@ import numpy as np
 
 
 class SimpleNet(nn.Module):
-    def __init__(self, ALPHA):
+    def __init__(self, ALPHA, INPUT_SHAPE, OUTPUT_SHAPE):
         super().__init__()
 
         self.ALPHA = ALPHA
-
-        INPUT_SHAPE = 8
-        OUTPUT_SHAPE = 4
 
         self.model = nn.Sequential(
             nn.Linear(INPUT_SHAPE, 64),

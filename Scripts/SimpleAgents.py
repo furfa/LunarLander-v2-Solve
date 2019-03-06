@@ -45,7 +45,7 @@ if __name__ == '__main__':
     
  
  
-    GR = GymRunner("LunarLander-v2", '/tmp/random-agent-results') 
+    GR = GymRunner("CartPole-v1", '/tmp/random-agent-results') 
 
     print(GR.get_shapes())
     # agent = RandomAgent(GR.get_shapes()["action_space"])

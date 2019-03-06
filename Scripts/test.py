@@ -8,24 +8,31 @@ TODO:
       при этом модель не обучается
 """
 
-agent = Agent(TorchModels.SimpleNet, gamma=0.99, epsilon=0.99,
-                epsEnd=0.05, eps_delta=1e-4,
-                alpha=1e-3, maxMemorySize=1500,
-                tau=5e-4
-                )
-gR = GymRunner()
+agent = Agent(
+        TorchModels.SimpleNet, 
+        MemoryNumpy,
+        gamma=0.99, 
+        epsilon=0.99, eps_end=0.01, eps_delta=0.995,
+        alpha=5e-3, 
+        maxMemorySize=2500,
+        tau=1e-3,
+        action_space=2,
+        observation_space=4,
+        )
+gR = GymRunner(env_name="CartPole-v1")
+print(gR.get_shapes())
 
 gR.random_actions(agent)
 print("Заполнение памяти случайными действиями завершено")
 
 gR.fit(
     agent, 
-    n_iters = 10000,
-    batch_size=32,
-    LEARN_FREQ=20,
-    visualize=True
+    n_iters = 5000,
+    batch_size=64,
+    LEARN_FREQ=1,
+    visualize=False
 )
 
 
-gR.test_agent(agent,n_iters=10)
+gR.test_agent(agent,n_iters=100)
 

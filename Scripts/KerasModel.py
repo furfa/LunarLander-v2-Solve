@@ -8,7 +8,7 @@ from rl.policy import BoltzmannQPolicy , EpsGreedyQPolicy,BoltzmannGumbelQPolicy
 from rl.memory import SequentialMemory
 import numpy as np
 
-env = gym.make("LunarLander-v2")
+env = gym.make("CartPole-v1")
 outup_shape = env.action_space.n
 input_shape = env.observation_space.shape
 
