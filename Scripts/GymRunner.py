@@ -103,7 +103,7 @@ class GymRunner():
                     scores = scores[-100:]
                     print("-" * 20)
                     print(
-                        f"\n[MEAN_SCORE] {np.mean(scores):.2f} [STD_SCORE] {np.std(scores):.2f} \n", 
+                        f"[MEAN_SCORE] {np.mean(scores):.2f} [STD_SCORE] {np.std(scores):.2f} \n", 
                         end=""
                     )
                     print("-" * 20)
@@ -129,6 +129,7 @@ class GymRunner():
                     try_block(env, scores, pbar, visualize)
 
         try_block(env, scores, pbar, visualize)
+        pbar.close()
 
     def test_agent(self, agent, n_iters=10, render=True, save_video=True, video_path="../Results/"):
         base_path = video_path
