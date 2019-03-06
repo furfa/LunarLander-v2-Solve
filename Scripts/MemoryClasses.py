@@ -16,9 +16,9 @@ class MemoryNumpy(object):
         action_size,
         seed):
         """
-        size - int
-        observation_size - int
-        reward_size - int
+        size(int)
+        observation_size(int)
+        reward_size(int)
         """
         self.observation_size = observation_size
         self.reward_size = reward_size
@@ -27,6 +27,7 @@ class MemoryNumpy(object):
             (size, observation_size+reward_size+observation_size+1+1)
         )
         self.size = size 
+        self.is_fill = False
     def append(self, obs, action, reward, next_obs, done):
         if all( [i is not None for i in (obs, action, reward, next_obs, done)] ):
             self.data[self.index % self.size] = np.hstack(
@@ -34,11 +35,19 @@ class MemoryNumpy(object):
             )
 
             self.index += 1
+            if self.index == self.size:
+                self.is_fill = True
             self.index %= self.size
     
     def sample(self, batch_size):
         miniBatch = copy.deepcopy(self) 
-        selected_rows = np.random.choice(np.arange( len(self) ), size=batch_size, replace=False) 
+        
+        index_space = len(self) if (self.is_fill) else (self.index)
+
+        if index_space < batch_size:
+            raise IndexError("memory length less then batch_size")
+
+        selected_rows = np.random.choice(np.arange( index_space ), size=batch_size, replace=False) 
         miniBatch.data = self.data[selected_rows]
 
         dones = torch.from_numpy( miniBatch.get_dones() ).float().unsqueeze(1) # Fix shape
