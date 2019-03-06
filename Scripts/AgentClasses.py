@@ -22,7 +22,7 @@ class DQN_agent(object):
                  ):
         """
         epsilon - коеф рандома
-        epsEnd - минимальный epsilon
+        eps_end - минимальный epsilon
         eps_delta - коеф уменьшения epsilonа
         action_space - количество доступных действий в среде
         observation_space - размер observation

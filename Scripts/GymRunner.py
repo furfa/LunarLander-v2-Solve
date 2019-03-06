@@ -6,6 +6,12 @@ from tqdm import tqdm
 import os
 from datetime import datetime
 class GymRunner():
+    """
+    TODO:
+        self.LEARNING_EPISODE_COUNTER не работает
+        добавить сохрание модели
+    """
+
     ENV_NAME = ""
     env = None
 
