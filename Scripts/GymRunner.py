@@ -21,28 +21,35 @@ class GymRunner():
             "observation_space" : self.env.observation_space.shape,
         }
 
-    def random_actions(self, agent):
-
+    def random_actions(self, agent, n_iters = "full"):
+        """
+        Случайные действия дли инициализации памяти
+        -------------------------------------------------------------------------
+        agent (Agent) - объект Агента для заполнения
+        n_iters (int, str) - количество заполениния, "full" для заполнения всей памяти
+        """
         env = self.env
+        
+        if n_iters == "full":
+            n_iters = agent.memory.get_size() 
 
-        for i in tqdm( range( agent.memory.get_size() ) ):
+        for i in tqdm( range(n_iters) ):
             observation = env.reset()
             done = False
             while not done:
                 action = env.action_space.sample()
-                observation_, reward, done, info = env.step(action)
+                next_observation, reward, done, info = env.step(action)
 
-                agent.memory.append(observation, action, reward, observation_, done)
-                observation = observation_
+                agent.memory.append(observation, action, reward, next_observation, done)
+                observation = next_observation
+
     def fit(self, agent, n_iters, max_iters=2000, batch_size=32, LEARN_FREQ=1, visualize=True):
 
         env = self.env
         scores = list()
-        # epsHistory = []
 
         pbar = tqdm( range(n_iters) )
         for iteration_num in pbar:
-            # epsHistory.append(agent.EPSILON)        
             done = False
             observation = env.reset()
             score = 0
@@ -51,12 +58,12 @@ class GymRunner():
                     env.render()
                 action = agent.chooseAction( observation=observation)
 
-                observation_, reward, done, info = env.step(action)
+                next_observation, reward, done, info = env.step(action)
                 score += reward
 
-                agent.memory.append(observation, action, reward, observation_, done)
+                agent.memory.append(observation, action, reward, next_observation, done)
 
-                observation = observation_            
+                observation = next_observation            
                 if i % LEARN_FREQ == 0:
                     agent.learn(batch_size)
                 if done:
