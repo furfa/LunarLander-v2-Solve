@@ -17,7 +17,15 @@ AGENT = DQN_agent
 MEMORY = MemoryNumpy
 MODEL = models.SimpleNet
 
-if __name__ == "__main__":
+def kostil(reward):
+    return (
+        reward == 100 or 
+        reward == -100 or 
+        reward == 10 or 
+        reward == 200
+        )
+
+def main():
     agent = AGENT(
         MODEL, 
         MEMORY,
@@ -34,7 +42,8 @@ if __name__ == "__main__":
         observation_space=OBS_SPACE,
     )
     gR = GymRunner(
-            env_name=ENV_NAME
+            env_name=ENV_NAME,
+            behavior_func=kostil
     )
 
     gR.random_actions(agent, 64)
@@ -52,3 +61,6 @@ if __name__ == "__main__":
     gR.test_agent(agent,n_iters=10, render=False)
 
     print("Готово!")
+
+if __name__ == "__main__":
+    main()
