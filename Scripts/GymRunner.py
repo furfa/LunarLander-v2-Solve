@@ -9,12 +9,12 @@ class GymRunner():
     ENV_NAME = ""
     env = None
 
-    def __init__(self, env_name = "LunarLander-v2", outdir = '/tmp/RF-results'):
+    def __init__(self, env_name = "LunarLander-v2"):
         self.ENV_NAME = env_name
         self.env = gym.make(self.ENV_NAME)
         self.env.seed(228)
-        #self.env = wrappers.Monitor(self.env, directory=outdir, force=True)
-        #self.env._max_episode_steps = 1200
+
+        self.LEARNING_EPISODE_COUNTER = 0
 
     def get_shapes(self):
         return {
@@ -38,6 +38,8 @@ class GymRunner():
             observation = env.reset()
             done = False
             while not done:
+                self.LEARNING_EPISODE_COUNTER += 1 # СЧЕТЧИК ЭПИЗОДОВ ОБУЧЕНИЯ
+
                 action = env.action_space.sample()
                 next_observation, reward, done, info = env.step(action)
 
@@ -52,6 +54,8 @@ class GymRunner():
         def main_loop(env, scores, pbar, visualize):
 
             for iteration_num in pbar:
+                self.LEARNING_EPISODE_COUNTER += 1 # СЧЕТЧИК ЭПИЗОДОВ ОБУЧЕНИЯ
+                
                 done = False
                 observation = env.reset()
                 score = 0
@@ -80,10 +84,12 @@ class GymRunner():
 
                 if iteration_num % 100 == 0 and iteration_num!=0:
                     scores = scores[-100:]
+                    print("-" * 20)
                     print(
                         f"\n[MEAN_SCORE] {np.mean(scores):.2f} [STD_SCORE] {np.std(scores):.2f} \n", 
                         end=""
                     )
+                    print("-" * 20)
 
         def try_block(env, scores, pbar, visualize):
             try:
@@ -136,11 +142,10 @@ class GymRunner():
             print(f"Game_reward= {sum_reward}")
             mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
-        env.close()
 
         if save_video:
             date = datetime.now()
-            new_dir_name = f"{np.mean(mean_reward)} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
+            new_dir_name = f"{np.mean(mean_reward)} | {self.LEARNING_EPISODE_COUNTER} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
             new_dir_path = os.path.join(base_path, new_dir_name)
 
             os.replace(tmp_path, new_dir_path)
