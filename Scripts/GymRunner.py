@@ -3,7 +3,8 @@ import numpy as np
 import gym
 from gym import wrappers, logger
 from tqdm import tqdm
-
+import os
+from datetime import datetime
 class GymRunner():
     ENV_NAME = ""
     env = None
@@ -71,14 +72,19 @@ class GymRunner():
                         break
 
                 scores.append(score)
-                pbar.set_description(f"[SCORE] {score:.2f}")
+                mean_score = np.mean(scores[-100:])
+                pbar.set_description(f"[S] {score:.2f} [MS] {mean_score:.2f}")
+
+                if mean_score >= 200:
+                    print("Early stopping")
+
                 if iteration_num % 100 == 0 and iteration_num!=0:
                     scores = scores[-100:]
                     print(
                         f"\n[MEAN_SCORE] {np.mean(scores):.2f} [STD_SCORE] {np.std(scores):.2f} \n", 
                         end=""
                     )
-                    
+
         def try_block(env, scores, pbar, visualize):
             try:
                 main_loop(env, scores, pbar, visualize)
@@ -90,33 +96,51 @@ class GymRunner():
                 """)
                 if inp == 'o':
                     print("Остановка обучения.")
+                    # env.close()
                 elif inp == '+v':
                     try_block(env, scores, pbar, True)
                 elif inp == '-v':
                     try_block(env, scores, pbar, False)
+                else:
+                    print("Продолжаем :)")
+                    try_block(env, scores, pbar, visualize)
 
         try_block(env, scores, pbar, visualize)
 
-    def test_agent(self, agent, n_iters):
-        self.env = gym.make(self.ENV_NAME)
+    def test_agent(self, agent, n_iters=10, render=True, save_video=True, video_path="../Results/"):
+        base_path = video_path
+        tmp_path = os.path.join(base_path, "TMP")
+
+        env = self.env
+
+        if save_video:
+            env = wrappers.Monitor(env, tmp_path)
         
         mean_reward = []
         for iter in range(n_iters):
             done = False
-            observation = self.env.reset()
+            observation = env.reset()
             reward = 0
             info = {}
 
             sum_reward = 0
             while not done:
-                self.env.render()
+                if render:
+                    env.render()
 
                 action = agent.chooseAction(observation)
 
-                observation, reward, done, info = self.env.step(action)
+                observation, reward, done, info = env.step(action)
 
                 sum_reward += reward
             print(f"Game_reward= {sum_reward}")
             mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
-        self.env.close()
+        env.close()
+
+        if save_video:
+            date = datetime.now()
+            new_dir_name = f"{np.mean(mean_reward)} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
+            new_dir_path = os.path.join(base_path, new_dir_name)
+
+            os.replace(tmp_path, new_dir_path)

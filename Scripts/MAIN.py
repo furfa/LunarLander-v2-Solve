@@ -49,4 +49,7 @@ if __name__ == "__main__":
     )
 
 
-    gR.test_agent(agent,n_iters=100)
+    gR.test_agent(agent,n_iters=10, render=False)
+
+    print("Готово!")
+    exit(0)
