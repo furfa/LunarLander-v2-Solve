@@ -60,7 +60,7 @@ def main():
         visualize=False
     )
 
-
+    # score: 535
     gR.test_agent(agent,n_iters=10, render=False)
 
     print("Готово!")
