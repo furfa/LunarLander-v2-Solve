@@ -59,11 +59,11 @@ def main():
         LEARN_FREQ=2,
         visualize=False
     )
-
-
+    # 435 iters
+    
     gR.test_agent(agent,n_iters=10, render=False)
-
+    
     print("Готово!")
-
+    
 if __name__ == "__main__":
     main()
