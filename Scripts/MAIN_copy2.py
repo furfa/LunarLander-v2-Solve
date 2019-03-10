@@ -33,8 +33,8 @@ def main():
         gamma=0.99,
 
         epsilon=1., 
-        eps_end=0.01, 
-        eps_delta=0.998,
+        eps_end=0.02, 
+        eps_delta=0.996,
 
         alpha=1e-3, 
         maxMemorySize=15000,

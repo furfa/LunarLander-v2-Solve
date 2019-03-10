@@ -33,8 +33,8 @@ def main():
         gamma=0.99,
 
         epsilon=1., 
-        eps_end=0.01, 
-        eps_delta=0.998,
+        eps_end=0.03, 
+        eps_delta=0.997,
 
         alpha=1e-3, 
         maxMemorySize=15000,
@@ -56,7 +56,7 @@ def main():
         agent, 
         n_iters = 5000,
         batch_size=64,
-        LEARN_FREQ=2,
+        LEARN_FREQ=3,
         visualize=False
     )
 
