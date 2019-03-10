@@ -139,7 +139,7 @@ class GymRunner():
         env = self.env
 
         if save_video:
-            env = wrappers.Monitor(env, tmp_path)
+            env = wrappers.Monitor(env, tmp_path, force=True)
         
         mean_reward = []
         for iter in range(n_iters):
