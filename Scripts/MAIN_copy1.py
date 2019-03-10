@@ -63,6 +63,7 @@ def main():
 
     gR.test_agent(agent,n_iters=10, render=False)
 
+    # score : 616
     print("Готово!")
 
 if __name__ == "__main__":
