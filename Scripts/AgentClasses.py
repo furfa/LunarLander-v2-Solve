@@ -19,6 +19,7 @@ class DQN_agent(object):
                  tau=1e-3,
                  action_space=4, 
                  observation_space=8,
+                 seed=1
                  ):
         """
         epsilon - коеф рандома
@@ -44,11 +45,11 @@ class DQN_agent(object):
         self.TAU = tau
         self.learn_step_counter = 0
         self.memory = MemClass(self.memSize, observation_space, 1, 1, 228) 
-
+        torch.manual_seed(seed)
 
         self.Q_nn_copy = MODEL(alpha, observation_space, action_space)
         self.Q_nn_base = MODEL(alpha, observation_space, action_space)
-        self.Q_nn_base.load_state_dict( self.Q_nn_copy.state_dict() )
+        self.Q_nn_base.load_state_dict( self.Q_nn_copy.state_dict() ) # Одинаковые веса в начале
         self.Q_nn_base.eval()
         
     def chooseAction(self, observation):

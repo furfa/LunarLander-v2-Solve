@@ -16,10 +16,11 @@ class GymRunner():
     ENV_NAME = ""
     env = None
 
-    def __init__(self, env_name = "LunarLander-v2", behavior_func = lambda reward : False):
+    def __init__(self, env_name = "LunarLander-v2", behavior_func = lambda reward : False, seed=1):
         self.ENV_NAME = env_name
         self.env = gym.make(self.ENV_NAME)
-        self.env.seed(228)
+        np.random.seed(seed)
+        self.env.seed(seed)
         self.additional_behavior = behavior_func
 
 
@@ -120,7 +121,6 @@ class GymRunner():
                 """)
                 if inp == 'o':
                     print("Остановка обучения.")
-                    # env.close()
                 elif inp == '+v':
                     try_block(env, scores, pbar, True)
                 elif inp == '-v':

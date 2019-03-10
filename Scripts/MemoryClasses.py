@@ -20,6 +20,7 @@ class MemoryNumpy(object):
         observation_size(int)
         reward_size(int)
         """
+        random.seed(seed)
         self.observation_size = observation_size
         self.reward_size = reward_size
         self.index = 0

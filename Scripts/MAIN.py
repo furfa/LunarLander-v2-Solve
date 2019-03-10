@@ -16,6 +16,7 @@ ACTION_SPACE = 4
 AGENT = DQN_agent
 MEMORY = MemoryNumpy
 MODEL = models.SimpleNet
+SEED = 1337
 
 def kostil(reward):
     return (
@@ -40,10 +41,12 @@ def main():
         tau=1e-3,
         action_space=ACTION_SPACE,
         observation_space=OBS_SPACE,
+        seed=SEED
     )
     gR = GymRunner(
             env_name=ENV_NAME,
-            behavior_func=kostil
+            behavior_func=kostil,
+            seed=SEED
     )
 
     gR.random_actions(agent, 64)
