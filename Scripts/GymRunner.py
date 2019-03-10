@@ -1,10 +1,11 @@
 import numpy as np
-import numpy as np
 import gym
 from gym import wrappers, logger
 from tqdm import tqdm
 import os
 from datetime import datetime
+import copy
+
 class GymRunner():
     """
     TODO:
