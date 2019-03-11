@@ -59,5 +59,49 @@ def try_block(env, scores, pbar, visualize):
             print("Продолжаем :)")
             try_block(env, scores, pbar, visualize)
 ```
-Например в данной ситуации модель переобучилась
-![https://github.com/furfa/LunarLander-v2-Solve/blob/master/img/605.png](https://github.com/furfa/LunarLander-v2-Solve/blob/master/img/605.png)
+Например в данной ситуации модель переобучилась, т.к. mean score растет медленно, а модель пытается адаптироваться ко всем observationам.
+![alt](https://github.com/furfa/LunarLander-v2-Solve/blob/master/img/605.png)
+
+Ситуация исправляется хорошей начальной инициализацией памяти, и уменьшением скорости уменьшения epsilona (Добавлением большего количества рандома в модель)
+
+После оптимизации: 
+![alt](https://github.com/furfa/LunarLander-v2-Solve/blob/master/img/411.jpg)
+
+* Далее мы последовали советам https://drive.google.com/file/d/0BxXI_RttTZAhVUhpbDhiSUFFNjg/view из презентации от DEEPMIND.
+
+Изменили LOSS на HUBER.
+Так выглядит финальная модель.
+
+```python
+class HuberNet(nn.Module):
+    def __init__(self, ALPHA, INPUT_SHAPE, OUTPUT_SHAPE):
+        super().__init__()
+
+        self.ALPHA = ALPHA
+
+        self.model = nn.Sequential(
+            nn.Linear(INPUT_SHAPE, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, OUTPUT_SHAPE),
+        )
+
+        # self.optimizer = optim.RMSprop(self.parameters(), lr=self.ALPHA, momentum=0.0001) # Tune this
+        self.optimizer = optim.Adam(self.parameters(), lr=self.ALPHA) # Tune this
+
+        self.loss = nn.SmoothL1Loss()
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')     
+        self.to(self.device)
+
+    def forward(self, observation):
+        observation = torch.Tensor(observation).to(self.device)
+        actions = self.model(observation)
+        return actions
+```
+
+## Результаты:
+
+![alt](https://github.com/furfa/LunarLander-v2-Solve/blob/master/img/231.jpg)
+
+## Наилучший результат - 231 итерация.
