@@ -67,7 +67,7 @@ def main():
         render=False,
         save_video=True,
         save_model=True)
-
+    # Лучшая модель
     print("Готово!")
 
 if __name__ == "__main__":
