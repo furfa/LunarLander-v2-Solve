@@ -16,7 +16,7 @@ ACTION_SPACE = 4
 AGENT = DQN_agent
 MEMORY = MemoryNumpy
 MODEL = models.SimpleNet
-SEED = 1337
+SEED = 228
 
 def kostil(reward):
     return (
@@ -34,9 +34,9 @@ def main():
 
         epsilon=0.99, 
         eps_end=0.01, 
-        eps_delta=0.95,
+        eps_delta=0.9,
 
-        alpha=1e-3, 
+        alpha=5e-4, 
         maxMemorySize=15000,
         tau=1e-3,
         action_space=ACTION_SPACE,
@@ -49,14 +49,14 @@ def main():
             seed=SEED
     )
 
-    gR.random_actions(agent, 64)
+    gR.random_actions(agent, 128)
     print("Заполнение памяти случайными действиями завершено")
 
     gR.fit(
         agent, 
         n_iters = 5000,
-        batch_size=64,
-        LEARN_FREQ=4,
+        batch_size=128,
+        LEARN_FREQ=8,
         visualize=False
     )
 
