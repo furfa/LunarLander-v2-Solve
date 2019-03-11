@@ -5,6 +5,7 @@ from tqdm import tqdm
 import os
 from datetime import datetime
 import copy
+import pickle
 
 class GymRunner():
     """
@@ -25,6 +26,7 @@ class GymRunner():
 
 
         self.LEARNING_EPISODE_COUNTER = 0
+        self.env_cop = copy.deepcopy(self.env)
 
     def get_shapes(self):
         return {
@@ -132,11 +134,11 @@ class GymRunner():
         try_block(env, scores, pbar, visualize)
         pbar.close()
 
-    def test_agent(self, agent, n_iters=10, render=True, save_video=True, video_path="../Results/"):
+    def test_agent(self, agent, n_iters=10, render=True, save_video=True, video_path="../Results/", save_model=True):
         base_path = video_path
         tmp_path = os.path.join(base_path, "TMP")
 
-        env = self.env
+        env = self.env_cop
 
         if save_video:
             env = wrappers.Monitor(env, tmp_path, force=True)
@@ -175,9 +177,15 @@ class GymRunner():
             mean_reward.append(sum_reward)
         print('Mean_reward:',np.mean(mean_reward))
 
-        if save_video:
-            date = datetime.now()
-            new_dir_name = f"{np.mean(mean_reward):.2f} | {self.LEARNING_EPISODE_COUNTER} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
-            new_dir_path = os.path.join(base_path, new_dir_name)
 
+        # название директории для сохранения
+        date = datetime.now()
+        new_dir_name = f"{np.mean(mean_reward):.2f} | {self.LEARNING_EPISODE_COUNTER} | {date.day}.{date.month}.{date.year} | {date.hour}:{date.minute}"
+        new_dir_path = os.path.join(base_path, new_dir_name)
+        if save_video:
             os.replace(tmp_path, new_dir_path)
+        if save_model:
+            path_to_model_file = os.path.join( new_dir_path, "model.pkl" ) 
+            open(path_to_model_file, 'w').close() # touch analog
+            with open(path_to_model_file , "wb" ) as output:
+                pickle.dump(agent, output, pickle.HIGHEST_PROTOCOL)

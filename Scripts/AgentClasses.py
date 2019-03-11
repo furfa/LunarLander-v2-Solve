@@ -99,6 +99,3 @@ class DQN_agent(object):
     def update_weight(self, model_from, model_to, tau):
         for from_p, to_p in zip(model_from.parameters(), model_to.parameters()):
             to_p.data.copy_(tau*from_p.data + (1.0-tau)*to_p.data)
-
-
-

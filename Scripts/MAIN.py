@@ -61,7 +61,12 @@ def main():
     )
 
 
-    gR.test_agent(agent,n_iters=10, render=False)
+    gR.test_agent(
+        agent,
+        n_iters=10,
+        render=False,
+        save_video=True,
+        save_model=True)
 
     print("Готово!")
 
