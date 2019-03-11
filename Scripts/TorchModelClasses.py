@@ -48,7 +48,8 @@ class HuberNet(nn.Module):
             nn.Linear(64, OUTPUT_SHAPE),
         )
 
-        self.optimizer = optim.RMSprop(self.parameters(), lr=self.ALPHA, momentum=0.0001) # Tune this
+        # self.optimizer = optim.RMSprop(self.parameters(), lr=self.ALPHA, momentum=0.0001) # Tune this
+        self.optimizer = optim.Adam(self.parameters(), lr=self.ALPHA) # Tune this
 
         self.loss = nn.SmoothL1Loss()
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')     
