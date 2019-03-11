@@ -13,7 +13,7 @@
 * pickle (Для сохранения агентов)
 
 ## Что мы делали
-* За бейзлайн взяли модель и реализацию DQN отсюда https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/DeepQLearning (По факту от нее уже ничего не осталось), и адаптировали к нашей задаче. Получили ответ более чем за 1000 итераций. Также посмотрели решение второго места лидерборда https://github.com/plopd/deep-reinforcement-learning/blob/master/dqn/Deep_Q_Network.ipynb 
+* За бейзлайн взяли модель и реализацию DQN отсюда [ТЫЦ](https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/DeepQLearning) (По факту от нее уже ничего не осталось), и адаптировали к нашей задаче. Получили ответ более чем за 1000 итераций. Также посмотрели решение второго места лидерборда [ТЫЦ](https://github.com/plopd/deep-reinforcement-learning/blob/master/dqn/Deep_Q_Network.ipynb)
 * Далее изменили алгоритм обновления весов фиксированной модели. Вместо простого перекидывания, стали взвешивать. Это дало лучший скор в 800 итераций
 ```python
 if self.replace_target_cnt is not None and \
