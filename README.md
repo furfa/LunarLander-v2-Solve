@@ -14,7 +14,7 @@
 
 ## Что мы делали
 * За бейзлайн взяли модель и реализацию DQN отсюда https://github.com/philtabor/Youtube-Code-Repository/tree/master/ReinforcementLearning/DeepQLearning (По факту от нее уже ничего не осталось), и адаптировали к нашей задаче. Получили ответ более чем за 1000 итераций. Также посмотрели решение второго места лидерборда https://github.com/plopd/deep-reinforcement-learning/blob/master/dqn/Deep_Q_Network.ipynb 
-* Далее изменили алгоритм обновления весов фиксированной модели. Вместо простово перекидывания, стали взвешивать. Это дало лучший скор в 800 итераций
+* Далее изменили алгоритм обновления весов фиксированной модели. Вместо простого перекидывания, стали взвешивать. Это дало лучший скор в 800 итераций
 ```python
 if self.replace_target_cnt is not None and \
     self.learn_step_counter % self.replace_target_cnt == 0:
@@ -72,6 +72,9 @@ def try_block(env, scores, pbar, visualize):
 * Далее мы последовали советам https://drive.google.com/file/d/0BxXI_RttTZAhVUhpbDhiSUFFNjg/view из презентации от DEEPMIND.
 
 Изменили MSELOSS на HUBER.
+
+Подобрали гиперпараметры и получили скор 231.
+
 Так выглядит финальная модель.
 
 ```python
